@@ -74,6 +74,7 @@ const propTypes = {
   EXPERIMENTAL_cutCopyPaste: PropTypes.bool,
 
   value: PropTypes.string,
+  component: PropTypes.elementType,
   onKeyDown: PropTypes.func,
   onSelect: PropTypes.func,
   onBlur: PropTypes.func,
@@ -181,7 +182,7 @@ class MentionsInput extends React.Component {
   }
 
   getInputProps = isTextarea => {
-    let { readOnly, disabled, style } = this.props
+    let { readOnly, disabled, style, component } = this.props
 
     // pass all props that we don't use through to the input control
     let props = omit(this.props, 'style', keys(propTypes))
@@ -191,6 +192,7 @@ class MentionsInput extends React.Component {
       ...style('input'),
 
       value: this.getPlainText(),
+      type: component === 'input' ? 'text' : undefined,
 
       ...(!readOnly &&
         !disabled && {
@@ -206,25 +208,16 @@ class MentionsInput extends React.Component {
   }
 
   renderControl = () => {
-    let { singleLine, style } = this.props
+    let { singleLine, style, component: componentProp } = this.props
     let inputProps = this.getInputProps(!singleLine)
+    const Component = componentProp || singleLine ? 'input' : 'textarea'
 
     return (
       <div {...style('control')}>
         {this.renderHighlighter(inputProps.style)}
-        {singleLine
-          ? this.renderInput(inputProps)
-          : this.renderTextarea(inputProps)}
+        <Component ref={this.setInputRef} {...inputProps} />
       </div>
     )
-  }
-
-  renderInput = props => {
-    return <input type="text" ref={this.setInputRef} {...props} />
-  }
-
-  renderTextarea = props => {
-    return <textarea ref={this.setInputRef} {...props} />
   }
 
   setInputRef = el => {
